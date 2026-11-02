@@ -19,14 +19,14 @@ class AnalyzerTests(unittest.TestCase):
                 source = path.read_text()
                 if path.parent.name == 'Square' and path.stem == 'SquareGame':
                     # Upstream added lowercase key handling but did not update
-                    # either reference XML. Match the version of those fixtures
+                    # the token reference XML. Match that fixture's version
                     # without changing any original input/reference file.
                     source, count = re.subn(r'^.*if \(key = (?:113|122|120)\).*\n', '', source, flags=re.M)
                     self.assertEqual(count, 3)
                 tokens = tokenize(source)
                 xml = '<tokens>\n'+'\n'.join(map(leaf, tokens))+'\n</tokens>\n'
                 self.assertEqual(lines(xml), lines(path.with_name(path.stem+'T.xml').read_text()))
-                self.assertEqual(lines(Analyzer(tokens).analyze()), lines(path.with_suffix('.xml').read_text()))
+                self.assertEqual(lines(Analyzer(tokenize(path.read_text())).analyze()), lines(path.with_suffix('.xml').read_text()))
 
     def test_current_squaregame_includes_lowercase_branches(self):
         import xml.etree.ElementTree as ET
@@ -44,7 +44,6 @@ class AnalyzerTests(unittest.TestCase):
                 if values in (['113'], ['122'], ['120']):
                     self.assertEqual(condition.find('term/identifier').text.strip(), 'key')
                     removed.append(int(values[0]))
-                    statements.remove(node)
         self.assertEqual(sorted(removed), [113, 120, 122])
         expected = ET.parse(path.with_suffix('.xml')).getroot()
         def shape(node):

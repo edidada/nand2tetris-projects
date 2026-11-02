@@ -4,4 +4,4 @@
 
 独立project10.yml对官方ArrayTest、ExpressionLessSquare、Square中的7份Jack分别比较token和syntax两类XML，共14份原参考文件。只忽略每行缩进和空行，不忽略token内部内容或结构；原Jack/XML均未修改。另测试注释/字符串/XML转义与非法输入。CLI写.generated.xml/.generatedT.xml，保留原参考输出。只在Actions执行，不在本地运行分析器。Project09游戏尚未完成，Project10仅语法分析，不声称实现后续代码生成。
 
-版本差异：官方Square/SquareGame.jack后来新增小写q/z/x的113/122/120三个if分支，但SquareGame.xml与SquareGameT.xml未更新。CI在内存中仅删除这三行来匹配旧XML（严格要求恰好3行），仍完整对照14份原参考。另对当前完整Jack生成的AST检查三个新增分支存在，再仅移除这三个AST节点，与原参考树逐节点比较。源Jack与参考XML不修改；首次原样对比因此失败，不能归因于语法实现后静默略过。
+版本差异：官方Square/SquareGame.jack新增小写q/z/x的113/122/120三个if分支，语法树SquareGame.xml已同步，但token参考SquareGameT.xml仍旧版。仅token比较在内存中删除这三行来匹配旧T.xml（严格要求恰好3行）；完整当前源码语法树直接与原SquareGame.xml比较，不删除节点。另检查三条小写分支确实存在。原Jack与所有参考XML均未修改。两次早期CI暴露的是参考文件期次差异及验证适配错误，报告以最终HEAD通过为准。
