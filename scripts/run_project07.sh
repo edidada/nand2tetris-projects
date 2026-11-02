@@ -8,6 +8,7 @@ git -C "$simulator" checkout 327b7e4337b31efb815e1c1e3913c0efd299bcf2
 mkdir -p "$simulator/InstallDir/bin/classes"
 find "$simulator" -name '*.java' -print > "$root/.tools/java-sources.txt"
 javac -encoding UTF-8 -d "$simulator/InstallDir/bin/classes" @"$root/.tools/java-sources.txt"
+python3 scripts/prepare_vm_overflow.py
 while IFS= read -r -d '' source; do
   python3 projects/07/vm_translator.py "$source"
 done < <(find "$root/projects/07" -name '*.vm' -print0)
