@@ -13,3 +13,6 @@ node_modules/
 
 /project03-results.txt
 /projects/03/**/*.out
+
+projects/05/Memory-headless.tst
+projects/05/Memory-headless.cmp
