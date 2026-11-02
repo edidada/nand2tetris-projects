@@ -2,7 +2,7 @@
 set -euo pipefail
 root="$PWD"
 project="${1:-01}"
-[[ "$project" == "01" || "$project" == "02" || "$project" == "03" ]]
+[[ "$project" == "01" || "$project" == "02" || "$project" == "03" || "$project" == "05" ]]
 simulator="$root/.tools/simulator"
 git clone https://github.com/nand2tetris/nand2tetris_simulator.git "$simulator"
 git -C "$simulator" checkout 327b7e4337b31efb815e1c1e3913c0efd299bcf2
