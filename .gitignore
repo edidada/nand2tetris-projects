@@ -1,3 +1,9 @@
 .DS_Store
 node_modules/
 *.zip
+
+.DS_Store
+._*
+/.tools/
+/project01-results.txt
+/projects/01/*.out

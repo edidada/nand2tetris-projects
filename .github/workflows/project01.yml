@@ -1,0 +1,26 @@
+name: Nand2Tetris Project 01
+on:
+  push:
+    branches: [edidada/project01]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build official simulator and test all chips
+        run: |
+          set -o pipefail
+          bash scripts/run_project01.sh 2>&1 | tee project01-results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: project01-official-results
+          path: project01-results.txt
