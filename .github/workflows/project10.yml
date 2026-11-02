@@ -1,0 +1,17 @@
+name: Nand2Tetris Project 10
+on:
+  push:
+    branches: [edidada/project10]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - working-directory: projects/10
+        run: python -m unittest -v test_analyzer
