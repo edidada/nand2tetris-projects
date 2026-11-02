@@ -1,2 +1,3 @@
 projects/01/*.hdl text eol=lf
 scripts/*.sh text eol=lf
+projects/02/*.hdl text eol=lf

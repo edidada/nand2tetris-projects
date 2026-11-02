@@ -7,3 +7,6 @@ node_modules/
 /.tools/
 /project01-results.txt
 /projects/01/*.out
+
+/project02-results.txt
+/projects/02/*.out
