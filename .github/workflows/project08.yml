@@ -1,0 +1,29 @@
+name: Nand2Tetris Project 08
+on:
+  push:
+    branches: [edidada/project08]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official:
+    runs-on: ubuntu-24.08
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build official simulator and test assembly programs
+        run: |
+          set -o pipefail
+          bash scripts/run_project08.sh 08 2>&1 | tee project08-results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: project08-official-results
+          path: project08-results.txt
