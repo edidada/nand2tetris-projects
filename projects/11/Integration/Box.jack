@@ -1,0 +1,20 @@
+class Box {
+    field int value;
+    static int count;
+    constructor Box new(int initial) {
+        let value = initial;
+        let count = count + 1;
+        return this;
+    }
+    method int inc(int delta) {
+        let value = value + delta;
+        return value;
+    }
+    method int get() { return value; }
+    method int shadow() {
+        var int value;
+        let value = 99;
+        return value;
+    }
+    function int created() { return count; }
+}

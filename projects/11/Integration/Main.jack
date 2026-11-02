@@ -1,0 +1,42 @@
+class Main {
+    function int fact(int n) {
+        if (n < 2) { return 1; }
+        return n * Main.fact(n - 1);
+    }
+    function void main() {
+        var Box a, b;
+        var Array arr;
+        var String str;
+        var int i, sum;
+        let a = Box.new(5);
+        let b = Box.new(10);
+        do Memory.poke(8100, a.inc(3));
+        do Memory.poke(8101, b.get());
+        do Memory.poke(8102, Box.created());
+        do Memory.poke(8103, a.shadow());
+        do Memory.poke(8104, a.get());
+        do Memory.poke(8105, Main.fact(6));
+        let arr = Array.new(3);
+        let arr[0] = a.inc(2);
+        let arr[1] = b.inc(arr[0]);
+        let arr[2] = a.get() + b.get();
+        do Memory.poke(8106, arr[2]);
+        let i = 0;
+        let sum = 0;
+        while (i < 3) {
+            let sum = sum + arr[i];
+            let i = i + 1;
+        }
+        do Memory.poke(8107, sum);
+        let str = " a<&> ";
+        do Memory.poke(8108, str.length());
+        do Memory.poke(8109, str.charAt(0));
+        do Memory.poke(8110, str.charAt(5));
+        do Memory.poke(8111, str.charAt(3));
+        if ((~false) & (3 < 4)) { let sum = 111; }
+        else { let sum = 222; }
+        do Memory.poke(8112, sum);
+        while (true) { }
+        return;
+    }
+}

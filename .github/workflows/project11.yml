@@ -1,0 +1,26 @@
+name: Nand2Tetris Project 11
+on:
+  push:
+    branches: [edidada/project11]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compiler:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: bash scripts/run_project11.sh 2>&1 | tee project11-results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: project11-runtime-results
+          path: project11-results.txt
