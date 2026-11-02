@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import unittest
 from jack_analyzer import Analyzer, leaf, tokenize
 
@@ -15,10 +16,40 @@ class AnalyzerTests(unittest.TestCase):
         self.assertEqual(len(files), 7)
         for path in files:
             with self.subTest(path=str(path)):
-                tokens = tokenize(path.read_text())
+                source = path.read_text()
+                if path.parent.name == 'Square' and path.stem == 'SquareGame':
+                    # Upstream added lowercase key handling but did not update
+                    # either reference XML. Match the version of those fixtures
+                    # without changing any original input/reference file.
+                    source, count = re.subn(r'^.*if \(key = (?:113|122|120)\).*\n', '', source, flags=re.M)
+                    self.assertEqual(count, 3)
+                tokens = tokenize(source)
                 xml = '<tokens>\n'+'\n'.join(map(leaf, tokens))+'\n</tokens>\n'
                 self.assertEqual(lines(xml), lines(path.with_name(path.stem+'T.xml').read_text()))
                 self.assertEqual(lines(Analyzer(tokens).analyze()), lines(path.with_suffix('.xml').read_text()))
+
+    def test_current_squaregame_includes_lowercase_branches(self):
+        import xml.etree.ElementTree as ET
+        path = ROOT/'Square/SquareGame.jack'
+        tree = ET.fromstring(Analyzer(tokenize(path.read_text())).analyze())
+        removed = []
+        for statements in tree.iter('statements'):
+            for node in list(statements):
+                if node.tag != 'ifStatement':
+                    continue
+                condition = node.find('expression')
+                if condition is None:
+                    continue
+                values = [n.text.strip() for n in condition.iter('integerConstant')]
+                if values in (['113'], ['122'], ['120']):
+                    self.assertEqual(condition.find('term/identifier').text.strip(), 'key')
+                    removed.append(int(values[0]))
+                    statements.remove(node)
+        self.assertEqual(sorted(removed), [113, 120, 122])
+        expected = ET.parse(path.with_suffix('.xml')).getroot()
+        def shape(node):
+            return node.tag, (node.text or '').strip(), tuple(shape(child) for child in node)
+        self.assertEqual(shape(tree), shape(expected))
 
     def test_comments_inside_strings_and_xml_escaping(self):
         source = '/* doc */ class X { function void f() { do O.p("// /* <&> */"); return; } }'
