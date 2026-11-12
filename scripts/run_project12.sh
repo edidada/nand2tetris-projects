@@ -53,7 +53,7 @@ if p.name=='KeyboardTest':
     lines += ['repeat 1000000 { vmstep; }']
     # PageDown, readChar 3, JACK with a corrected typo, -32123 with backspace.
     for key in [137,51,74,65,88,129,67,75,128,45,51,50,49,50,120,129,51,128]:
-        lines += [f'set RAM[24576] {key},','repeat 200000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
+        lines += [f'set RAM[24576] {key},','repeat 2000000 { vmstep; }','set RAM[24576] 0,','repeat 2000000 { vmstep; }']
 lines += ['repeat 20000000 { vmstep; }']
 for first in range(16384,24576,8):
     lines += ['output-list '+' '.join(f'RAM[{a}]%D1.6.1' for a in range(first,first+8))+';', 'output;']
