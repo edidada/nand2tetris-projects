@@ -41,6 +41,40 @@ done
 mkdir -p .tools/Pong
 cp projects/11/Pong/*.jack projects/12/*.jack .tools/Pong/
 python3 .tools/compiler/11/jack_compiler.py .tools/Pong
+# Execute unmodified official visual examples and retain the whole framebuffer.
+for name in Screen Output String; do
+    directory="$root/.tools/${name}Test"
+    python3 - "$directory" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1])
+lines=['load,','output-file screen.out,','repeat 20000000 { vmstep; }']
+for first in range(16384,24576,8):
+    lines += ['output-list '+' '.join(f'RAM[{a}]%D1.6.1' for a in range(first,first+8))+';', 'output;']
+(p/'screen.tst').write_text('\n'.join(lines)+'\n')
+PY
+    (cd "$simulator/InstallDir" && timeout 240 java -Djava.awt.headless=true -cp bin/classes VMEmulatorMain "$directory/screen.tst") 2>&1 | tee "$root/test-results/$name-screen.log"
+    cp "$directory/screen.out" "$root/test-results/$name-screen.out"
+    python3 - "$directory/screen.out" "$root/test-results/$name-screen.png" <<'PY'
+from pathlib import Path
+import sys,struct,zlib
+lines=Path(sys.argv[1]).read_text().splitlines()
+words=[]
+for line in lines:
+    fields=[x.strip() for x in line.split('|')[1:-1]]
+    if fields and not fields[0].startswith('RAM'):
+        words.extend(int(x)&65535 for x in fields)
+assert len(words)==8192,len(words)
+assert any(words),'Empty screen'
+rows=[]
+for y in range(256):
+    rows.append(b'\x00'+bytes(0 if words[y*32+x//16] & (1<<(x%16)) else 255 for x in range(512)))
+def chunk(t,d):return struct.pack('>I',len(d))+t+d+struct.pack('>I',zlib.crc32(t+d)&0xffffffff)
+png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',512,256,8,0,0,0,0))+chunk(b'IDAT',zlib.compress(b''.join(rows)))+chunk(b'IEND',b'')
+Path(sys.argv[2]).write_bytes(png)
+print('Framebuffer: 8192 words,',sum(w.bit_count() for w in words),'black pixels')
+PY
+done
 # Cross-module runtime assertions with every OS implementation loaded.
 directory="$root/.tools/Integration"
 mkdir -p "$directory"
