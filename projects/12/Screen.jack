@@ -10,34 +10,122 @@
  * the screen is indexed (0,0).
  */
 class Screen {
+    static Array screen, powers;
+    static boolean color;
 
     /** Initializes the Screen. */
     function void init() {
+        var int i, value;
+        let screen = 16384;
+        let color = true;
+        let powers = Array.new(16);
+        let i = 0;
+        let value = 1;
+        while (i < 16) {
+            let powers[i] = value;
+            let value = value + value;
+            let i = i + 1;
+        }
+        return;
     }
 
     /** Erases the entire screen. */
     function void clearScreen() {
+        var int i;
+        let i = 0;
+        while (i < 8192) { let screen[i] = 0; let i = i + 1; }
+        return;
     }
 
     /** Sets the current color, to be used for all subsequent drawXXX commands.
      *  Black is represented by true, white by false. */
     function void setColor(boolean b) {
+        let color = b;
+        return;
     }
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
+        var int word, mask;
+        if ((x < 0) | (x > 511) | (y < 0) | (y > 255)) { do Sys.error(7); }
+        let word = (32 * y) + (x / 16);
+        let mask = powers[x - ((x / 16) * 16)];
+        if (color) { let screen[word] = screen[word] | mask; }
+        else { let screen[word] = screen[word] & (~mask); }
+        return;
     }
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
+        var int dx, dy, sx, sy, error, twice;
+        var boolean done;
+        if ((x1 < 0) | (x1 > 511) | (x2 < 0) | (x2 > 511) |
+            (y1 < 0) | (y1 > 255) | (y2 < 0) | (y2 > 255)) { do Sys.error(8); }
+        if (y1 = y2) {
+            do Screen.drawRectangle(Math.min(x1,x2),y1,Math.max(x1,x2),y2);
+            return;
+        }
+        let dx = Math.abs(x2-x1);
+        let dy = -Math.abs(y2-y1);
+        let sx = 1;
+        let sy = 1;
+        if (x1 > x2) { let sx = -1; }
+        if (y1 > y2) { let sy = -1; }
+        let error = dx + dy;
+        let done = false;
+        while (~done) {
+            do Screen.drawPixel(x1,y1);
+            if ((x1=x2) & (y1=y2)) { let done = true; }
+            else {
+                let twice = error + error;
+                if (~(twice < dy)) { let error = error + dy; let x1=x1+sx; }
+                if (~(twice > dx)) { let error = error + dx; let y1=y1+sy; }
+            }
+        }
+        return;
     }
 
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
+        var int left, right, leftBit, rightBit, firstMask, lastMask, word, row, mask;
+        if ((x1 < 0) | (x2 > 511) | (y1 < 0) | (y2 > 255) |
+            (x1 > x2) | (y1 > y2)) { do Sys.error(9); }
+        let left = x1 / 16;
+        let right = x2 / 16;
+        let leftBit = x1 - (left * 16);
+        let rightBit = x2 - (right * 16);
+        let firstMask = ~(powers[leftBit] - 1);
+        let lastMask = -1;
+        if (rightBit < 15) { let lastMask = powers[rightBit+1] - 1; }
+        let row = y1;
+        while (~(row > y2)) {
+            let word = left;
+            while (~(word > right)) {
+                let mask = -1;
+                if (word = left) { let mask = mask & firstMask; }
+                if (word = right) { let mask = mask & lastMask; }
+                if (color) { let screen[(row*32)+word] = screen[(row*32)+word] | mask; }
+                else { let screen[(row*32)+word] = screen[(row*32)+word] & (~mask); }
+                let word = word + 1;
+            }
+            let row = row + 1;
+        }
+        return;
     }
 
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
+        var int dy, dx, squared;
+        if ((r < 0) | (r > 181) | ((x-r) < 0) | ((x+r) > 511) |
+            ((y-r) < 0) | ((y+r) > 255)) { do Sys.error(13); }
+        let squared = r*r;
+        let dy = -r;
+        while (~(dy > r)) {
+            let dx = Math.sqrt(squared - (dy*dy));
+            do Screen.drawRectangle(x-dx,y+dy,x+dx,y+dy);
+            let dy = dy+1;
+        }
+        return;
     }
 }

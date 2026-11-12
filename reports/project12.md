@@ -1,0 +1,7 @@
+# Nand2Tetris Project12：Jack OS
+
+官方规范 https://www.nand2tetris.org/project12 ，最新官方 projects main 为 5bd2184edfd4945ff8a28eb0b237c12cdbe9e498。独立 edidada/project12；只实现 Jack 代码，Java 仅运行官方模拟器。未在本地编译或运行实验。
+
+八个类覆盖原始 API：Math 使用固定16轮乘法、负数域倍增除法（避免 -32768 取绝对值溢出）、奇数递减平方根；Memory 使用地址有序空闲链表、首次适配、拆分及前后相邻块合并；Array 转发分配释放；String 支持零容量、负数域数字解析、最小整数输出及容量检查。Screen 使用位掩码矩形填充、Bresenham 线与水平扫描圆；Output 保留原始字体表，按屏幕字节保留相邻字符，维护23×64光标；Keyboard 读取内存映射键盘并等待按下释放；Sys 初始化、等待、错误输出和停机。
+
+独立工作流先执行未修改的原始 Math/Memory/Array 比较测试，再编译所有模块测试及完整 Pong。复用固定 SHA 的 Project11 编译器，模拟器固定官方提交。编译成功不等于交互验收：其余模块运行断言、内存回收压力、屏幕快照、键盘输入、Sys.wait实际计时及完整Pong交互仍需补齐；当前不得计为Project12完成。

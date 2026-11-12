@@ -9,12 +9,16 @@
  */
 class Math {
 
+
     /** Initializes the library. */
     function void init() {
+        return;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) { return -x; }
+        return x;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +27,17 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int result, mask, i;
+        let result = 0;
+        let mask = 1;
+        let i = 0;
+        while (i < 16) {
+            if (~((y & mask) = 0)) { let result = result + x; }
+            let x = x + x;
+            let mask = mask + mask;
+            let i = i + 1;
+        }
+        return result;
     }
 
     /** Returns the integer part of x/y.
@@ -31,17 +46,50 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+        var int quotient, value, power;
+        var boolean negative;
+        if (y = 0) { do Sys.error(3); }
+        let negative = (x < 0) = (y > 0);
+        if (x > 0) { let x = -x; }
+        if (y > 0) { let y = -y; }
+        let quotient = 0;
+        while (~(x > y)) {
+            let value = y;
+            let power = -1;
+            while ((~(value < (-16384))) & (~(x > (value + value)))) {
+                let value = value + value;
+                let power = power + power;
+            }
+            let x = x - value;
+            let quotient = quotient + power;
+        }
+        if (negative) { return quotient; }
+        return -quotient;
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int result, odd;
+        if (x < 0) { do Sys.error(4); }
+        let result = 0;
+        let odd = 1;
+        while (~(x < odd)) {
+            let x = x - odd;
+            let odd = odd + 2;
+            let result = result + 1;
+        }
+        return result;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+        if (a > b) { return a; }
+        return b;
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+        if (a < b) { return a; }
+        return b;
     }
 }

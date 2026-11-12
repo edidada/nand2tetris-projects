@@ -15,12 +15,19 @@
  * as a small filled square, indicates where the next character will be displayed.
  */
 class Output {
+    static int row, column;
 
     // Character map for displaying characters
     static Array charMaps; 
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
+        do Output.initMap();
+        do Screen.clearScreen();
+        let row = 0;
+        let column = 0;
+        do Output.render(0);
+        return;
     }
 
     // Initializes the character map array
@@ -176,28 +183,89 @@ class Output {
     /** Moves the cursor to the j-th column of the i-th row,
      *  and erases the character displayed there. */
     function void moveCursor(int i, int j) {
+        if ((i < 0) | (i > 22) | (j < 0) | (j > 63)) { do Sys.error(20); }
+        do Output.render(32);
+        let row = i;
+        let column = j;
+        do Output.render(0);
+        return;
     }
 
     /** Displays the given character at the cursor location,
      *  and advances the cursor one column forward. */
     function void printChar(char c) {
+        if (c = 128) { do Output.println(); return; }
+        if (c = 129) { do Output.backSpace(); return; }
+        do Output.render(c);
+        let column = column + 1;
+        if (column = 64) {
+            let column = 0;
+            let row = row + 1;
+            if (row = 23) { let row = 0; }
+        }
+        do Output.render(0);
+        return;
     }
 
     /** displays the given string starting at the cursor location,
      *  and advances the cursor appropriately. */
     function void printString(String s) {
+        var int i;
+        let i = 0;
+        while (i < s.length()) {
+            do Output.printChar(s.charAt(i));
+            let i = i + 1;
+        }
+        return;
     }
 
     /** Displays the given integer starting at the cursor location,
      *  and advances the cursor appropriately. */
     function void printInt(int i) {
+        var String s;
+        let s = String.new(6);
+        do s.setInt(i);
+        do Output.printString(s);
+        do s.dispose();
+        return;
     }
 
     /** Advances the cursor to the beginning of the next line. */
     function void println() {
+        do Output.render(32);
+        let column = 0;
+        let row = row + 1;
+        if (row = 23) { let row = 0; }
+        do Output.render(0);
+        return;
     }
 
     /** Moves the cursor one column back. */
     function void backSpace() {
+        do Output.render(32);
+        if (column > 0) { let column = column - 1; }
+        else {
+            if (row > 0) { let row = row - 1; let column = 63; }
+        }
+        do Output.render(0);
+        return;
+    }
+    // Replace one byte of each screen word, preserving its neighboring cell.
+    function void render(char c) {
+        var Array map, screen;
+        var int address, i, bits, old;
+        let map = Output.getMap(c);
+        let screen = 16384;
+        let address = (row * 352) + (column / 2);
+        let i = 0;
+        while (i < 11) {
+            let bits = map[i];
+            let old = screen[address];
+            if ((column & 1) = 0) { let screen[address] = (old & (-256)) | bits; }
+            else { let screen[address] = (old & 255) | (bits * 256); }
+            let address = address + 32;
+            let i = i + 1;
+        }
+        return;
     }
 }
