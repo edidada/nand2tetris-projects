@@ -42,13 +42,19 @@ mkdir -p .tools/Pong
 cp projects/11/Pong/*.jack projects/12/*.jack .tools/Pong/
 python3 .tools/compiler/11/jack_compiler.py .tools/Pong
 # Execute unmodified official visual examples and retain the whole framebuffer.
-for name in Screen Output String; do
+for name in Screen Output String Keyboard; do
     directory="$root/.tools/${name}Test"
     python3 - "$directory" <<'PY'
 from pathlib import Path
 import sys
 p=Path(sys.argv[1])
-lines=['load,','output-file screen.out,','repeat 20000000 { vmstep; }']
+lines=['load,','output-file screen.out,']
+if p.name=='KeyboardTest':
+    lines += ['repeat 1000000 { vmstep; }']
+    # PageDown, readChar 3, JACK with a corrected typo, -32123 with backspace.
+    for key in [137,51,74,65,88,129,67,75,128,45,51,50,49,50,120,129,51,128]:
+        lines += [f'set RAM[24576] {key},','repeat 200000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
+lines += ['repeat 20000000 { vmstep; }']
 for first in range(16384,24576,8):
     lines += ['output-list '+' '.join(f'RAM[{a}]%D1.6.1' for a in range(first,first+8))+';', 'output;']
 (p/'screen.tst').write_text('\n'.join(lines)+'\n')
