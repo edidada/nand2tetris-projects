@@ -56,4 +56,70 @@ done
 mkdir -p .tools/Pong
 cp projects/11/Pong/*.jack projects/12/*.jack .tools/Pong/
 python3 .tools/compiler/11/jack_compiler.py .tools/Pong
+# Cross-module runtime assertions with every OS implementation loaded.
+directory="$root/.tools/Integration"
+mkdir -p "$directory"
+cp projects/12/*.jack "$directory/"
+cat > "$directory/Main.jack" <<'EOF'
+class Main {
+    function void main() {
+        var Array out, a, b, c, whole;
+        var String s;
+        let out = 18000;
+        let out[0] = Math.divide(-32767-1, 2);
+        let out[1] = Math.divide(32767, -1);
+        let out[2] = Math.sqrt(32767);
+        let s = String.new(6);
+        do s.setInt(-32767-1);
+        let out[3] = s.length();
+        let out[4] = s.intValue();
+        do s.dispose();
+        let a = Array.new(100);
+        let b = Array.new(200);
+        let c = Array.new(300);
+        do b.dispose();
+        do a.dispose();
+        do c.dispose();
+        let whole = Array.new(12000);
+        let whole[11999] = 12345;
+        let out[5] = whole[11999];
+        do whole.dispose();
+        do Screen.clearScreen();
+        do Screen.setColor(true);
+        do Screen.drawPixel(511,255);
+        let out[6] = Memory.peek(24575);
+        do Screen.setColor(false);
+        do Screen.drawPixel(511,255);
+        let out[7] = Memory.peek(24575);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(15,0,16,0);
+        let out[8] = Memory.peek(16384);
+        let out[9] = Memory.peek(16385);
+        do Output.moveCursor(0,0);
+        do Output.printChar(65);
+        let out[10] = Memory.peek(16384);
+        let out[11] = Keyboard.keyPressed();
+        let out[12] = 777;
+        return;
+    }
+}
+EOF
+{
+    echo 'load,'
+    echo 'output-file Integration.out,'
+    echo 'compare-to Integration.cmp,'
+    printf 'output-list '
+    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((18000+i))"; done
+    printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
+} > "$directory/Integration.tst"
+{
+    printf '|'
+    for ((i=0;i<13;i++)); do printf 'RAM[%s]|' "$((18000+i))"; done
+    printf '\n|'
+    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777; do printf ' %6d |' "$value"; done
+    printf '\n'
+} > "$directory/Integration.cmp"
+python3 .tools/compiler/11/jack_compiler.py "$directory"
+run "$directory/Integration.tst"
+cp "$directory/Integration.out" test-results/
 printf 'PASS: original Math/Memory/Array tests; all eight OS classes and supplied programs/Pong compile. Interactive acceptance remains pending.\n'
