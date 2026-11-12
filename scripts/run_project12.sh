@@ -30,6 +30,12 @@ for module in Math Memory Array; do
     # Keep other OS modules built in for this isolated module test.
     cat > "$directory/Sys.jack" <<EOF
 class Sys {
+    function void error(int code) {
+        do Memory.poke(17999, code);
+        while (true) { }
+        return;
+    }
+    function void halt() { while (true) { } return; }
     function void init() {
         do $module.init();
         do Main.main();
