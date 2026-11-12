@@ -51,7 +51,7 @@ class Main {
         var Array out, a, b, c, whole;
         var String s;
         var int i;
-        let out = Array.new(13);
+        let out = Array.new(26);
         let out[0] = Math.divide(-32767-1, 2);
         let out[1] = Math.divide(32767, -1);
         let out[2] = Math.sqrt(32767);
@@ -86,8 +86,39 @@ class Main {
         let out[10] = Memory.peek(16384);
         let out[11] = Keyboard.keyPressed();
         let out[12] = 777;
+        let s = String.new(6);
+        do s.setInt(32767);
+        let out[13] = s.intValue();
+        do s.setInt(0);
+        let out[14] = s.length();
+        let out[15] = s.charAt(0);
+        do s.eraseLastChar();
+        do s.appendChar(45);
+        do s.appendChar(49);
+        do s.appendChar(50);
+        do s.appendChar(120);
+        do s.appendChar(51);
+        let out[16] = s.intValue();
+        do s.dispose();
+        do Screen.clearScreen();
+        do Screen.setColor(true);
+        do Screen.drawLine(0,0,15,15);
+        let out[17] = Memory.peek(16384);
+        let out[18] = Memory.peek(16864);
+        do Screen.drawLine(15,0,0,15);
+        let out[19] = Memory.peek(16384);
+        let out[20] = Memory.peek(16864);
+        do Screen.clearScreen();
+        do Screen.drawCircle(16,16,2);
+        let out[21] = Memory.peek(16833);
+        let out[22] = Memory.peek(16896);
+        let out[23] = Memory.peek(16897);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(14,14,18,18);
+        let out[24] = Memory.peek(16896);
+        let out[25] = Memory.peek(16897);
         let i = 0;
-        while (i < 13) { do Memory.poke(8000+i,out[i]); let i=i+1; }
+        while (i < 26) { do Memory.poke(8000+i,out[i]); let i=i+1; }
         return;
     }
 }
@@ -97,14 +128,14 @@ EOF
     echo 'output-file Integration.out,'
     echo 'compare-to Integration.cmp,'
     printf 'output-list '
-    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((8000+i))"; done
+    for ((i=0;i<26;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((8000+i))"; done
     printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
 } > "$directory/Integration.tst"
 {
     printf '|'
-    for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((8000+i))]"; done
+    for ((i=0;i<26;i++)); do printf '%.8s|' "RAM[$((8000+i))]"; done
     printf '\n|'
-    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777; do printf ' %6d |' "$value"; done
+    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777 32767 1 48 -12 1 -32768 -32767 -32767 1 -16384 7 0 0; do printf ' %6d |' "$value"; done
     printf '\n'
 } > "$directory/Integration.cmp"
 python3 .tools/compiler/11/jack_compiler.py "$directory"
