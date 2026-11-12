@@ -42,11 +42,11 @@ mkdir -p .tools/Pong
 cp projects/11/Pong/*.jack projects/12/*.jack .tools/Pong/
 python3 .tools/compiler/11/jack_compiler.py .tools/Pong
 # Execute unmodified official visual examples and retain the whole framebuffer.
-for phase in Initial Left Right Exit; do
+for phase in Initial Left Right Exit Bounce; do
     mkdir -p ".tools/Pong${phase}Test"
     cp .tools/Pong/*.vm ".tools/Pong${phase}Test/"
 done
-for name in Screen Output String Keyboard PongInitial PongLeft PongRight PongExit; do
+for name in Screen Output String Keyboard PongInitial PongLeft PongRight PongExit PongBounce; do
     directory="$root/.tools/${name}Test"
     python3 - "$directory" <<'PY'
 from pathlib import Path
@@ -64,6 +64,8 @@ if p.name.startswith('Pong'):
         lines += ['set RAM[24576] 130,','repeat 1000000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
     if p.name in ['PongRightTest','PongExitTest']:
         lines += ['set RAM[24576] 132,','repeat 1000000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
+    if p.name=='PongBounceTest':
+        lines += ['set RAM[24576] 132,','repeat 40000000 { vmstep; }','set RAM[24576] 0,']
     if p.name=='PongExitTest':
         lines += ['set RAM[24576] 140,','repeat 2000000 { vmstep; }','set RAM[24576] 0,']
 else:
@@ -112,6 +114,9 @@ if 'StringTest' in sys.argv[1]:
     assert text[:12]==expected,(text[:12],expected)
 if 'KeyboardTest' in sys.argv[1]:
     assert any('Test completed successfully' in line for line in text),text
+if 'PongBounceTest' in sys.argv[1]:
+    score=re.search(r'Score: (\d+)', '\n'.join(text))
+    assert score and int(score[1])>0,text
 if 'PongExitTest' in sys.argv[1]:
     assert any('Game Over' in line for line in text),text
 if 'Pong' in sys.argv[1]:
