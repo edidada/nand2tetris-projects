@@ -42,7 +42,11 @@ mkdir -p .tools/Pong
 cp projects/11/Pong/*.jack projects/12/*.jack .tools/Pong/
 python3 .tools/compiler/11/jack_compiler.py .tools/Pong
 # Execute unmodified official visual examples and retain the whole framebuffer.
-for name in Screen Output String Keyboard; do
+for phase in Initial Left Right Exit; do
+    mkdir -p ".tools/Pong${phase}Test"
+    cp .tools/Pong/*.vm ".tools/Pong${phase}Test/"
+done
+for name in Screen Output String Keyboard PongInitial PongLeft PongRight PongExit; do
     directory="$root/.tools/${name}Test"
     python3 - "$directory" <<'PY'
 from pathlib import Path
@@ -54,7 +58,16 @@ if p.name=='KeyboardTest':
     # PageDown, readChar 3, JACK with a corrected typo, -32123 with backspace.
     for key in [137,51,74,65,88,129,67,75,128,45,51,50,49,50,120,129,51,128]:
         lines += [f'set RAM[24576] {key},','repeat 2000000 { vmstep; }','set RAM[24576] 0,','repeat 2000000 { vmstep; }']
-lines += ['repeat 20000000 { vmstep; }']
+if p.name.startswith('Pong'):
+    lines += ['repeat 1000000 { vmstep; }']
+    if p.name in ['PongLeftTest','PongRightTest','PongExitTest']:
+        lines += ['set RAM[24576] 130,','repeat 1000000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
+    if p.name in ['PongRightTest','PongExitTest']:
+        lines += ['set RAM[24576] 132,','repeat 1000000 { vmstep; }','set RAM[24576] 0,','repeat 200000 { vmstep; }']
+    if p.name=='PongExitTest':
+        lines += ['set RAM[24576] 140,','repeat 2000000 { vmstep; }','set RAM[24576] 0,']
+else:
+    lines += ['repeat 20000000 { vmstep; }']
 for first in range(16384,24576,8):
     lines += ['output-list '+' '.join(f'RAM[{a}]%D1.6.1' for a in range(first,first+8))+';', 'output;']
 (p/'screen.tst').write_text('\n'.join(lines)+'\n')
@@ -99,9 +112,27 @@ if 'StringTest' in sys.argv[1]:
     assert text[:12]==expected,(text[:12],expected)
 if 'KeyboardTest' in sys.argv[1]:
     assert any('Test completed successfully' in line for line in text),text
+if 'PongExitTest' in sys.argv[1]:
+    assert any('Game Over' in line for line in text),text
+if 'Pong' in sys.argv[1]:
+    pixels=[x for x in range(512) if words[229*32+x//16] & (1<<(x%16))]
+    Path(sys.argv[2]).with_suffix('.bat.txt').write_text(repr(pixels))
 print('Decoded text:',repr(text))
 PY
 done
+python3 - <<'PY'
+import ast
+from pathlib import Path
+positions={}
+for phase in ['Initial','Left','Right']:
+    xs=ast.literal_eval(Path(f'test-results/Pong{phase}-screen.bat.txt').read_text())
+    assert xs,phase
+    positions[phase]=[min(xs),max(xs)]
+assert positions['Left'][0]<positions['Initial'][0],positions
+assert positions['Right'][0]>positions['Left'][0],positions
+print('Pong paddle left/right positions:',positions)
+Path('test-results/pong-input-results.txt').write_text(repr(positions))
+PY
 # Cross-module runtime assertions with every OS implementation loaded.
 directory="$root/.tools/Integration"
 mkdir -p "$directory"
