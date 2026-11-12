@@ -243,4 +243,5 @@ for start in 0 13; do
     cp "$directory/$name.out" test-results/
 done
 bash scripts/measure_project12_wait.sh
+bash scripts/verify_project12_gui_keys.sh
 printf 'PASS: original Math/Memory/Array tests; all eight OS classes and supplied programs/Pong compile. Interactive acceptance remains pending.\n'
