@@ -24,7 +24,7 @@ run() {
 for module in Math Memory Array; do
     directory="$root/.tools/${module}Test"
     mkdir -p "$directory"
-    cp "projects/12/${module}Test/"* "$directory/"
+    cp "projects/12/${module}Test/"*.jack "projects/12/${module}Test/"*.tst "projects/12/${module}Test/"*.cmp "$directory/"
     cp "projects/12/$module.jack" "$directory/"
     # The source-built emulator requires an explicit Sys.init entrypoint.
     # Keep other OS modules built in for this isolated module test.
