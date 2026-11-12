@@ -50,7 +50,7 @@ class Main {
     function void main() {
         var Array out, a, b, c, whole;
         var String s;
-        let out = 18000;
+        let out = 30000;
         let out[0] = Math.divide(-32767-1, 2);
         let out[1] = Math.divide(32767, -1);
         let out[2] = Math.sqrt(32767);
@@ -94,14 +94,14 @@ EOF
     echo 'output-file Integration.out,'
     echo 'compare-to Integration.cmp,'
     printf 'output-list '
-    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((18000+i))"; done
+    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((30000+i))"; done
     printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
 } > "$directory/Integration.tst"
 {
     printf '|'
-    for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((18000+i))]"; done
+    for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((30000+i))]"; done
     printf '\n|'
-    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777; do printf ' %6d |' "$value"; done
+    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16128 0 777; do printf ' %6d |' "$value"; done
     printf '\n'
 } > "$directory/Integration.cmp"
 python3 .tools/compiler/11/jack_compiler.py "$directory"
