@@ -79,6 +79,27 @@ def chunk(t,d):return struct.pack('>I',len(d))+t+d+struct.pack('>I',zlib.crc32(t
 png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',512,256,8,0,0,0,0))+chunk(b'IDAT',zlib.compress(b''.join(rows)))+chunk(b'IEND',b'')
 Path(sys.argv[2]).write_bytes(png)
 print('Framebuffer: 8192 words,',sum(w.bit_count() for w in words),'black pixels')
+# Decode actual screen cells and verify the official String/Keyboard scenario.
+import re
+font={}
+for args in re.findall(r'do Output.create\(([^)]+)\)',Path('projects/12/Output.jack').read_text()):
+    nums=[int(x.strip()) for x in args.split(',')]
+    font[tuple(nums[1:])]=chr(nums[0])
+font[(0,)*11]=' '
+text=[]
+for row in range(23):
+    line=''
+    for col in range(64):
+        bitmap=tuple((words[(row*11+y)*32+col//2] >> (8*(col%2)))&255 for y in range(11))
+        line+=font.get(bitmap,'?')
+    text.append(line.rstrip())
+Path(sys.argv[2]).with_suffix('.txt').write_text('\n'.join(text)+'\n')
+if 'StringTest' in sys.argv[1]:
+    expected=['new,appendChar: abcde','setInt: 12345','setInt: -32767','length: 5','charAt[2]: 99',"setCharAt(2,'-'): ab-de",'eraseLastChar: ab-d','intValue: 456','intValue: -32123','backSpace: 129','doubleQuote: 34','newLine: 128']
+    assert text[:12]==expected,(text[:12],expected)
+if 'KeyboardTest' in sys.argv[1]:
+    assert any('Test completed successfully' in line for line in text),text
+print('Decoded text:',repr(text))
 PY
 done
 # Cross-module runtime assertions with every OS implementation loaded.
