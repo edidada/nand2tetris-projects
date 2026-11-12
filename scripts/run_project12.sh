@@ -50,7 +50,8 @@ class Main {
     function void main() {
         var Array out, a, b, c, whole;
         var String s;
-        let out = 30000;
+        var int i;
+        let out = Array.new(13);
         let out[0] = Math.divide(-32767-1, 2);
         let out[1] = Math.divide(32767, -1);
         let out[2] = Math.sqrt(32767);
@@ -85,6 +86,8 @@ class Main {
         let out[10] = Memory.peek(16384);
         let out[11] = Keyboard.keyPressed();
         let out[12] = 777;
+        let i = 0;
+        while (i < 13) { do Memory.poke(8000+i,out[i]); let i=i+1; }
         return;
     }
 }
@@ -94,12 +97,12 @@ EOF
     echo 'output-file Integration.out,'
     echo 'compare-to Integration.cmp,'
     printf 'output-list '
-    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((30000+i))"; done
+    for ((i=0;i<13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((8000+i))"; done
     printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
 } > "$directory/Integration.tst"
 {
     printf '|'
-    for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((30000+i))]"; done
+    for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((8000+i))]"; done
     printf '\n|'
     for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777; do printf ' %6d |' "$value"; done
     printf '\n'
