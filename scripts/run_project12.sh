@@ -101,7 +101,7 @@ EOF
     printf '|'
     for ((i=0;i<13;i++)); do printf '%.8s|' "RAM[$((30000+i))]"; done
     printf '\n|'
-    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16128 0 777; do printf ' %6d |' "$value"; done
+    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777; do printf ' %6d |' "$value"; done
     printf '\n'
 } > "$directory/Integration.cmp"
 python3 .tools/compiler/11/jack_compiler.py "$directory"
