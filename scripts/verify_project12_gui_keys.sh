@@ -78,6 +78,7 @@ EOF
     PROJECT12_ROOT="$root" timeout 180 xvfb-run -a jshell --class-path bin/classes "$root/.tools/gui-keys.jsh"
 ) 2>&1 | tee test-results/gui-keyboard.log
 grep -q 'GUI_KEY_EVENTS_OK count=18' test-results/gui-keyboard.log
+grep -q 'GUI_WAIT requested=2000' test-results/gui-keyboard.log
 python3 - <<'PY'
 from pathlib import Path
 import re
