@@ -25,28 +25,7 @@ for module in Math Memory Array; do
     directory="$root/.tools/${module}Test"
     mkdir -p "$directory"
     cp "projects/12/${module}Test/"*.jack "projects/12/${module}Test/"*.tst "projects/12/${module}Test/"*.cmp "$directory/"
-    cp "projects/12/$module.jack" "$directory/"
-    # The source-built emulator requires an explicit Sys.init entrypoint.
-    # Keep other OS modules built in for this isolated module test.
-    cat > "$directory/Sys.jack" <<EOF
-class Sys {
-    function void error(int code) {
-        do Memory.poke(17999, code);
-        while (true) { }
-        return;
-    }
-    function void halt() { while (true) { } return; }
-    function void init() {
-        do $module.init();
-        do Main.main();
-        while (true) { }
-        return;
-    }
-}
-EOF
-    if [[ $module == Array ]]; then
-        sed -i 's/do Array.init();/do Memory.init();/' "$directory/Sys.jack"
-    fi
+    cp projects/12/*.jack "$directory/"
     python3 .tools/compiler/11/jack_compiler.py "$directory"
     run "$directory/${module}Test.tst"
 done
