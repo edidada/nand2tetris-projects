@@ -242,4 +242,5 @@ for start in 0 13; do
     run "$directory/$name.tst" || { cp "$directory/$name.out" "$directory/$name.cmp" test-results/; exit 1; }
     cp "$directory/$name.out" test-results/
 done
+bash scripts/measure_project12_wait.sh
 printf 'PASS: original Math/Memory/Array tests; all eight OS classes and supplied programs/Pong compile. Interactive acceptance remains pending.\n'
