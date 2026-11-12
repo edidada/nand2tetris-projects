@@ -43,7 +43,34 @@ void verifyKeys() throws Exception {
     SwingUtilities.invokeAndWait(()->frame.dispose());
     System.out.println("GUI_KEY_EVENTS_OK count="+keys.length+" official KeyboardComponent -> Keyboard listener -> RAM; no direct RAM writes");
 }
-try{verifyKeys();}catch(Throwable e){e.printStackTrace();System.exit(1);}
+void measureControllerWait() throws Exception {
+    Path directory=Path.of(System.getenv("PROJECT12_ROOT"),".tools","Wait2000");
+    Files.writeString(directory.resolve("Wait.tst"),"load,\nrepeat 100000000 { vmstep; }\n");
+    SimulatorsGUI.VMEmulatorComponent view=new SimulatorsGUI.VMEmulatorComponent();
+    VMEmulator vm=new VMEmulator(view);
+    HackGUI.ControllerComponent controls=new HackGUI.ControllerComponent();
+    Hack.Controller.HackController controller=new Hack.Controller.HackController(controls,vm,directory.resolve("Wait.tst").toString());
+    var field=VMEmulator.class.getDeclaredField("cpu");field.setAccessible(true);CPU cpu=(CPU)field.get(vm);
+    var speed=Hack.Controller.HackController.class.getDeclaredField("currentSpeedUnit");speed.setAccessible(true);
+    if(speed.getInt(controller)!=3)throw new Exception("Official default speed changed");
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.ANIMATION_MODE_CHANGE,Integer.valueOf(Hack.Controller.HackController.NO_DISPLAY_CHANGES)));
+    Thread.sleep(500);
+    SwingUtilities.invokeAndWait(()->controls.setVisible(true));
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.FAST_FORWARD,null));
+    long deadline=System.nanoTime()+60000000000L;
+    while(cpu.getRAM().getValueAt(8000)!=1 && System.nanoTime()<deadline)Thread.sleep(1);
+    if(cpu.getRAM().getValueAt(8000)!=1)throw new Exception("GUI wait start marker missing");
+    long start=System.nanoTime();
+    while(cpu.getRAM().getValueAt(8000)!=2 && System.nanoTime()<deadline)Thread.sleep(1);
+    double elapsed=(System.nanoTime()-start)/1000000.0;
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.STOP,null));
+    if(cpu.getRAM().getValueAt(8000)!=2)throw new Exception("GUI wait end marker missing");
+    ImageIO.write(new Robot().createScreenCapture(new Rectangle(controls.getLocationOnScreen(),controls.getSize())),"png",Path.of(System.getenv("PROJECT12_ROOT"),"test-results","gui-wait-controller.png").toFile());
+    Files.writeString(Path.of(System.getenv("PROJECT12_ROOT"),"test-results","gui-wait-measurement.json"),String.format(java.util.Locale.ROOT,"{\"requested_ms\":2000,\"elapsed_ms\":%.3f,\"speed_unit\":3,\"mode\":\"official HackController FastForwardTask, no animation, unmodified default speed\"}\n",elapsed));
+    SwingUtilities.invokeAndWait(()->controls.dispose());
+    System.out.printf(java.util.Locale.ROOT,"GUI_WAIT requested=2000 elapsed_ms=%.3f default_speed=3 actual_official_controller=true%n",elapsed);
+}
+try{verifyKeys();measureControllerWait();}catch(Throwable e){e.printStackTrace();System.exit(1);}
 /exit
 EOF
 (
