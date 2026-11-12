@@ -123,22 +123,26 @@ class Main {
     }
 }
 EOF
-{
-    echo 'load,'
-    echo 'output-file Integration.out,'
-    echo 'compare-to Integration.cmp,'
-    printf 'output-list '
-    for ((i=0;i<26;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((8000+i))"; done
-    printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
-} > "$directory/Integration.tst"
-{
-    printf '|'
-    for ((i=0;i<26;i++)); do printf '%.8s|' "RAM[$((8000+i))]"; done
-    printf '\n|'
-    for value in -16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777 32767 1 48 -12 1 -32768 -32767 -32767 1 -16384 7 0 0; do printf ' %6d |' "$value"; done
-    printf '\n'
-} > "$directory/Integration.cmp"
 python3 .tools/compiler/11/jack_compiler.py "$directory"
-run "$directory/Integration.tst" || { cp "$directory/Integration.out" "$directory/Integration.cmp" test-results/; exit 1; }
-cp "$directory/Integration.out" test-results/
+expected=(-16384 -32767 181 6 -32768 12345 -32768 0 -32768 1 16140 0 777 32767 1 48 -12 1 -32768 -32767 -32767 1 -16384 7 0 0)
+for start in 0 13; do
+    name="Integration$start"
+    {
+        echo 'load,'
+        echo "output-file $name.out,"
+        echo "compare-to $name.cmp,"
+        printf 'output-list '
+        for ((i=start;i<start+13;i++)); do printf 'RAM[%s]%%D1.6.1 ' "$((8000+i))"; done
+        printf ';\nrepeat 8000000 { vmstep; }\noutput;\n'
+    } > "$directory/$name.tst"
+    {
+        printf '|'
+        for ((i=start;i<start+13;i++)); do printf '%.8s|' "RAM[$((8000+i))]"; done
+        printf '\n|'
+        for ((i=start;i<start+13;i++)); do printf ' %6d |' "${expected[i]}"; done
+        printf '\n'
+    } > "$directory/$name.cmp"
+    run "$directory/$name.tst" || { cp "$directory/$name.out" "$directory/$name.cmp" test-results/; exit 1; }
+    cp "$directory/$name.out" test-results/
+done
 printf 'PASS: original Math/Memory/Array tests; all eight OS classes and supplied programs/Pong compile. Interactive acceptance remains pending.\n'
