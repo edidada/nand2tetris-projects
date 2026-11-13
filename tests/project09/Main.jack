@@ -1,0 +1,41 @@
+class Main {
+    function void main() {
+        var Board b;
+        var int i;
+        let b = Board.new();
+        do Memory.poke(8000, b.position());
+        do Memory.poke(8001, b.won());
+        do b.move(-1);
+        do Memory.poke(8002, b.move(-1));
+        do Memory.poke(8003, b.position());
+        do Memory.poke(8004, b.moveCount());
+        do b.reset();
+        do b.move(1);
+        do b.move(8);
+        do b.move(8);
+        do b.move(-1);
+        do b.move(1);
+        do Memory.poke(8005, b.won());
+        do Memory.poke(8006, b.position());
+        do Memory.poke(8007, b.moveCount());
+        do Memory.poke(8008, b.pushCount());
+        do Memory.poke(8009, b.boxAt(20) & b.boxAt(36));
+        do b.reset();
+        do b.move(1);
+        do b.move(1);
+        do b.move(1);
+        do Memory.poke(8010, b.move(1));
+        do Memory.poke(8011, b.position());
+        do Memory.poke(8012, b.boxAt(22));
+        do Memory.poke(8013, b.pushCount());
+        do b.reset();
+        do Memory.poke(8014, b.position());
+        do Memory.poke(8015, b.moveCount());
+        do Memory.poke(8016, b.pushCount());
+        do Memory.poke(8017, b.boxAt(19) & b.boxAt(35));
+        do b.dispose();
+        do Memory.poke(8018, 12345);
+        while (true) { }
+        return;
+    }
+}
