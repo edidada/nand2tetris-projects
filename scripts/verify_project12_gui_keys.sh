@@ -50,6 +50,7 @@ void measureControllerWait() throws Exception {
     VMEmulator vm=new VMEmulator(view);
     HackGUI.ControllerComponent controls=new HackGUI.ControllerComponent();
     Hack.Controller.HackController controller=new Hack.Controller.HackController(controls,vm,directory.resolve("Wait.tst").toString());
+    vm.setWorkingDir(directory.toFile());controls.setWorkingDir(directory.toFile());
     var field=VMEmulator.class.getDeclaredField("cpu");field.setAccessible(true);CPU cpu=(CPU)field.get(vm);
     var speed=Hack.Controller.HackController.class.getDeclaredField("currentSpeedUnit");speed.setAccessible(true);
     if(speed.getInt(controller)!=3)throw new Exception("Official default speed changed");
