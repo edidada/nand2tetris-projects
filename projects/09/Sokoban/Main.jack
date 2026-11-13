@@ -1,0 +1,38 @@
+/** One move per physical key press; release before accepting the next key. */
+class Main {
+    function void main() {
+        var Board board;
+        var int key, delta;
+        var boolean running, changed;
+        let board = Board.new();
+        let running = true;
+        do board.draw();
+        while (running) {
+            let key = Keyboard.keyPressed();
+            if (~(key = 0)) {
+                let changed = false;
+                let delta = 0;
+                if (key = 130) { let delta = -1; }
+                if (key = 131) { let delta = -8; }
+                if (key = 132) { let delta = 1; }
+                if (key = 133) { let delta = 8; }
+                if ((key = 82) | (key = 114)) {
+                    do board.reset();
+                    let changed = true;
+                }
+                if ((~(delta = 0)) & (~board.won())) {
+                    let changed = board.move(delta);
+                }
+                if (changed) { do board.draw(); }
+                if ((key = 81) | (key = 113)) { let running = false; }
+                while (~(Keyboard.keyPressed() = 0)) { do Sys.wait(1); }
+            }
+            do Sys.wait(1);
+        }
+        do board.dispose();
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 20);
+        do Output.printString("Thanks for playing!");
+        return;
+    }
+}

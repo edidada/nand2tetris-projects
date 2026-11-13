@@ -1,0 +1,119 @@
+/** Interactive warehouse puzzle. Board owns state; rendering never changes it. */
+class Board {
+    field Array walls, goals, boxes;
+    field int player, moves, pushes;
+
+    constructor Board new() {
+        let walls = Array.new(64);
+        let goals = Array.new(64);
+        let boxes = Array.new(64);
+        do reset();
+        return this;
+    }
+
+    method void reset() {
+        var int i, x, y;
+        let i = 0;
+        while (i < 64) {
+            let y = i / 8;
+            let x = i - (y * 8);
+            let walls[i] = (x = 0) | (x = 7) | (y = 0) | (y = 7);
+            let goals[i] = false;
+            let boxes[i] = false;
+            let i = i + 1;
+        }
+        // Two independent pushes to the right solve the initial warehouse.
+        let goals[20] = true;
+        let goals[36] = true;
+        let boxes[19] = true;
+        let boxes[35] = true;
+        let player = 18;
+        let moves = 0;
+        let pushes = 0;
+        return;
+    }
+
+    /** A blocked push is atomic: neither player nor box moves. */
+    method boolean move(int delta) {
+        var int next, beyond;
+        let next = player + delta;
+        if ((next < 0) | (next > 63)) { return false; }
+        if (walls[next]) { return false; }
+        if (boxes[next]) {
+            let beyond = next + delta;
+            if ((beyond < 0) | (beyond > 63)) { return false; }
+            if (walls[beyond] | boxes[beyond]) { return false; }
+            let boxes[next] = false;
+            let boxes[beyond] = true;
+            let pushes = pushes + 1;
+        }
+        let player = next;
+        let moves = moves + 1;
+        return true;
+    }
+
+    method boolean won() {
+        var int i;
+        let i = 0;
+        while (i < 64) {
+            if (goals[i] & (~boxes[i])) { return false; }
+            let i = i + 1;
+        }
+        return true;
+    }
+
+    method int position() { return player; }
+    method int moveCount() { return moves; }
+    method int pushCount() { return pushes; }
+    method boolean boxAt(int i) { return boxes[i]; }
+
+    method void draw() {
+        var int i, x, y;
+        do Screen.clearScreen();
+        do Output.moveCursor(0, 0);
+        do Output.printString("SOKOBAN  Arrows: move  R: restart  Q: quit");
+        do Output.moveCursor(1, 0);
+        do Output.printString("Push both boxes onto the hollow targets.");
+        let i = 0;
+        while (i < 64) {
+            let y = i / 8;
+            let x = 144 + ((i - (y * 8)) * 24);
+            let y = 40 + (y * 24);
+            do Screen.setColor(true);
+            if (walls[i]) {
+                do Screen.drawRectangle(x, y, x + 22, y + 22);
+            } else {
+                if (goals[i]) {
+                    do Screen.drawCircle(x + 11, y + 11, 8);
+                    do Screen.setColor(false);
+                    do Screen.drawCircle(x + 11, y + 11, 5);
+                    do Screen.setColor(true);
+                }
+                if (boxes[i]) {
+                    do Screen.drawRectangle(x + 4, y + 4, x + 18, y + 18);
+                    do Screen.setColor(false);
+                    do Screen.drawLine(x + 6, y + 6, x + 16, y + 16);
+                    do Screen.drawLine(x + 16, y + 6, x + 6, y + 16);
+                    do Screen.setColor(true);
+                }
+                if (player = i) { do Screen.drawCircle(x + 11, y + 11, 5); }
+            }
+            let i = i + 1;
+        }
+        do Output.moveCursor(21, 0);
+        do Output.printString("Moves: ");
+        do Output.printInt(moves);
+        do Output.printString("  Pushes: ");
+        do Output.printInt(pushes);
+        if (won()) { do Output.printString("  SOLVED! R to play again."); }
+        return;
+    }
+
+    method void dispose() {
+        do walls.dispose();
+        do goals.dispose();
+        do boxes.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}
