@@ -7,5 +7,5 @@ test = ['load,', 'output-file Integration.out,', 'compare-to Integration.cmp,',
         'output-list '+' '.join(c+'%D1.6.1' for c in columns)+';',
         'repeat 1000000 { vmstep; }', 'output;']
 (root/'Integration.tst').write_text('\n'.join(test)+'\n')
-(root/'Integration.cmp').write_text('|'+ '|'.join(f'{c:>8}' for c in columns)+'|\n|'+
+(root/'Integration.cmp').write_text('|'+ '|'.join(c[:8] for c in columns)+'|\n|'+
                                   '|'.join(f' {v:6} ' for v in expected)+'|\n')

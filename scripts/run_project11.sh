@@ -23,6 +23,8 @@ for name in MathTest MemoryTest ArrayTest Integration; do
   done
   python3 projects/11/jack_compiler.py "$directory"
   if ! (cd "$simulator/InstallDir" && timeout 180s java -Djava.awt.headless=true -cp bin/classes VMEmulatorMain "$directory/$name.tst") > "$directory/run.log" 2>&1; then
+    mkdir -p test-results/regression
+    cp "$directory/$name.out" "test-results/regression/$name.out" 2>/dev/null || true
     cat "$directory/run.log"
     exit 1
   fi
