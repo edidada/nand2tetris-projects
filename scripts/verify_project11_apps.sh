@@ -97,5 +97,14 @@ assert any('The average is 20' in s for s in text('average'))
 assert any('Game Over' in s for s in text('pong-escape'))
 score=text('pong-score');assert any('Score: 1' in s for s in score),score
 assert any('Game Over' in s for s in score),score
-print('SCREEN_ASSERTIONS_OK seven=7 complex_arrays=5 average=20 pong_score=1')
+positions={}
+for phase in ['initial','left','right']:
+    words=[int(s)&65535 for s in Path(f'test-results/pong-{phase}-words.txt').read_text().splitlines()]
+    xs=[x for x in range(512) if words[229*32+x//16] & (1<<(x%16))]
+    assert xs,phase
+    positions[phase]=[min(xs),max(xs)]
+assert positions['left'][0]<positions['initial'][0],positions
+assert positions['right'][0]>positions['left'][0],positions
+Path('test-results/application-results.json').write_text(json.dumps({'applications':6,'conversion_inputs':10,'conversion_bits':160,'complex_array_results':[5,40,0,77,110],'average':20,'seven':7,'gui_events':22,'square':{'directions':4,'grown_size':32,'shrunk_size':30,'quit':True},'pong':{'paddle_positions':positions,'score':1,'escape_game_over':True,'miss_game_over':True}},indent=2)+'\n')
+print('SCREEN_ASSERTIONS_OK seven=7 complex_arrays=5 average=20 pong_score=1 paddle_directions=2')
 PY
