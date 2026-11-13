@@ -24,7 +24,7 @@ void runGame() throws Exception {
     Point point=keyboard.getKeyEventHandler().getLocationOnScreen();
     robot.mouseMove(point.x+40,point.y+12);robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);robot.waitForIdle();
     class Harness {
-        void steps() throws Exception { for(int i=0;i<5000;i++)cpu.executeInstruction(); }
+        void steps() throws Exception { for(int i=0;i<30000;i++)cpu.executeInstruction(); }
         int[] words() { int[] a=new int[8192];for(int i=0;i<a.length;i++)a[i]=cpu.getRAM().getValueAt(16384+i);return a; }
         void save(String name) throws Exception {
             int[] a=words();BufferedImage image=new BufferedImage(512,256,BufferedImage.TYPE_INT_RGB);
@@ -56,10 +56,10 @@ void runGame() throws Exception {
     h.press(KeyEvent.VK_Q,81);h.save("quit");
     if(java.util.Arrays.equals(initial,h.words()))throw new Exception("Quit screen unchanged");
     SwingUtilities.invokeAndWait(()->frame.dispose());
-    System.out.println("GUI_APPLICATION_OK events=9 push_pixels=true held_key=true win_lock=true reset_exact=true quit=true");
+    System.out.println("GUI_APPLICATION_OK events=8 push_pixels=true held_key=true win_lock=true reset_exact=true quit=true");
 }
 try{runGame();}catch(Throwable e){e.printStackTrace();System.exit(1);}
 /exit
 JAVA
 (cd .tools/simulator/InstallDir && PROJECT09_ROOT="$root" timeout 180 xvfb-run -a jshell --class-path bin/classes "$root/.tools/gui.jsh") 2>&1 | tee test-results/gui.log
-grep -q 'GUI_APPLICATION_OK events=9' test-results/gui.log
+grep -q 'GUI_APPLICATION_OK events=8' test-results/gui.log

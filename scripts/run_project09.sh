@@ -16,6 +16,25 @@ cp projects/09/Sokoban/*.jack .tools/Sokoban/
 cp projects/09/Sokoban/Board.jack tests/project09/Main.jack .tools/State/
 python3 .tools/compiler/11/jack_compiler.py .tools/Sokoban
 python3 .tools/compiler/11/jack_compiler.py .tools/State
+# The source simulator requires an explicit Sys.init entry for multi-class apps.
+cat > .tools/Sokoban/Sys.vm <<'VM'
+function Sys.init 0
+call Memory.init 0
+pop temp 0
+call Math.init 0
+pop temp 0
+call Screen.init 0
+pop temp 0
+call Output.init 0
+pop temp 0
+call Keyboard.init 0
+pop temp 0
+call Main.main 0
+pop temp 0
+label HALT
+goto HALT
+VM
+cp .tools/Sokoban/Sys.vm .tools/State/
 python3 - <<'PY'
 from pathlib import Path
 lines=['load,','output-file state.out,','repeat 200000 { vmstep; }']
