@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -19,8 +21,11 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: bash scripts/run_project11.sh 2>&1 | tee project11-results.txt
+      - run: bash scripts/verify_project11_apps.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: project11-runtime-results
-          path: project11-results.txt
+          path: |
+            project11-results.txt
+            test-results/
