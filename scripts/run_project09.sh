@@ -26,7 +26,7 @@ python3 .tools/compiler/11/jack_compiler.py .tools/Sokoban
 python3 .tools/compiler/11/jack_compiler.py .tools/State
 python3 - <<'PY'
 from pathlib import Path
-lines=['load,','output-file state.out,','repeat 200000 { vmstep; }']
+lines=['load,','output-file state.out,','repeat 5000000 { vmstep; }']
 for a in range(8000,8019):
     lines += [f'output-list RAM[{a}]%D1.6.1;', 'output;']
 Path('.tools/State/state.tst').write_text('\n'.join(lines)+'\n')

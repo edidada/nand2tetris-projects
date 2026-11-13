@@ -24,7 +24,7 @@ void runGame() throws Exception {
     Point point=keyboard.getKeyEventHandler().getLocationOnScreen();
     robot.mouseMove(point.x+40,point.y+12);robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);robot.waitForIdle();
     class Harness {
-        void steps() throws Exception { for(int i=0;i<30000;i++)cpu.executeInstruction(); }
+        void steps() throws Exception { for(int i=0;i<500000;i++)cpu.executeInstruction(); }
         int[] words() { int[] a=new int[8192];for(int i=0;i<a.length;i++)a[i]=cpu.getRAM().getValueAt(16384+i);return a; }
         void save(String name) throws Exception {
             int[] a=words();BufferedImage image=new BufferedImage(512,256,BufferedImage.TYPE_INT_RGB);
@@ -43,7 +43,7 @@ void runGame() throws Exception {
         }
         boolean pixel(int x,int y) {return ((cpu.getRAM().getValueAt(16384+y*32+x/16) >>> (x%16))&1)==1;}
     }
-    Harness h=new Harness();h.steps();h.save("initial");int[] initial=h.words();
+    Harness h=new Harness();for(int i=0;i<10;i++)h.steps();h.save("initial");int[] initial=h.words();
     h.press(KeyEvent.VK_RIGHT,132);h.save("push");
     // Top box has left its original location and now occupies the goal.
     if(h.pixel(144+3*24+4,40+2*24+4) || !h.pixel(144+4*24+4,40+2*24+4))throw new Exception("Push pixels wrong");
