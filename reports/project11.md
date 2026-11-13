@@ -22,3 +22,4 @@
 共22次OS Robot按下/释放经官方Swing KeyboardComponent和Keyboard监听器输入，无直接写键盘RAM；ConvertToBin按题目约定仅设置输入RAM[8000]。官方CPU由脚本步进，GUI键盘由Xvfb承载，不宣称真人课堂或私有评分。所有屏幕原字、PNG、解码文本和application-results.json作为工件保存，永久证据由langnote台账归档。首次六程序成功运行https://github.com/edidada/nand2tetris-projects/actions/runs/43458042529；最终提交须查看对应同分支运行。
 
 原3个模块VM测试及13项集成RAM结果继续回归。本地只编辑与静态检查，不编译或运行实验；新增shell脚本内嵌临时JShell/字体解码代码，没有新增Python源文件。Java仅为官方模拟器验证工具。
+归档复核发现旧回归管道未设置pipefail，子脚本失败可被tee的成功掩盖；已修复工作流，并让四项原回归在隔离目录加载同一固定完整OS，保留所有原tst/cmp与13项集成期望，失败日志直接输出。先前绿色状态不能单独证明旧四项回归通过；最终验收须同时出现ORIGINAL_REGRESSIONS_OK和六应用/屏幕断言成功。
