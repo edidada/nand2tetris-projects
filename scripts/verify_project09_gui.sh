@@ -47,7 +47,7 @@ void runGame() throws Exception {
     h.press(KeyEvent.VK_RIGHT,132);h.save("push");
     // Top box has left its original location and now occupies the goal.
     if(h.pixel(144+3*24+4,40+2*24+4) || !h.pixel(144+4*24+4,40+2*24+4))throw new Exception("Push pixels wrong");
-    h.press(KeyEvent.VK_DOWN,133);h.press(KeyEvent.VK_DOWN,133);h.press(KeyEvent.VK_LEFT,130);h.press(KeyEvent.VK_RIGHT,132);
+    h.press(KeyEvent.VK_DOWN,133);h.press(KeyEvent.VK_LEFT,130);h.press(KeyEvent.VK_DOWN,133);h.press(KeyEvent.VK_RIGHT,132);
     h.save("solved");int[] solved=h.words();
     h.press(KeyEvent.VK_LEFT,130);
     if(!java.util.Arrays.equals(solved,h.words()))throw new Exception("Won state still moving");
