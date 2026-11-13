@@ -71,7 +71,41 @@ void measureControllerWait() throws Exception {
     SwingUtilities.invokeAndWait(()->controls.dispose());
     System.out.printf(java.util.Locale.ROOT,"GUI_WAIT requested=2000 elapsed_ms=%.3f default_speed=3 actual_official_controller=true%n",elapsed);
 }
-try{verifyKeys();measureControllerWait();}catch(Throwable e){e.printStackTrace();System.exit(1);}
+void runOfficialSysTest() throws Exception {
+    Path directory=Path.of(System.getenv("PROJECT12_ROOT"),".tools","SysTest");
+    Files.writeString(directory.resolve("Sys.tst"),"load,\nrepeat 100000000 { vmstep; }\n");
+    SimulatorsGUI.VMEmulatorComponent view=new SimulatorsGUI.VMEmulatorComponent();
+    VMEmulator vm=new VMEmulator(view);
+    HackGUI.ControllerComponent controls=new HackGUI.ControllerComponent();
+    Hack.Controller.HackController controller=new Hack.Controller.HackController(controls,vm,directory.resolve("Sys.tst").toString());
+    vm.setWorkingDir(directory.toFile());controls.setWorkingDir(directory.toFile());
+    var field=VMEmulator.class.getDeclaredField("cpu");field.setAccessible(true);CPU cpu=(CPU)field.get(vm);
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.ANIMATION_MODE_CHANGE,Integer.valueOf(Hack.Controller.HackController.NO_DISPLAY_CHANGES)));
+    Thread.sleep(500);
+    SwingUtilities.invokeAndWait(()->{controls.setVisible(true);view.getKeyboard().getKeyEventHandler().requestFocusInWindow();});
+    Robot robot=new Robot();robot.setAutoDelay(30);robot.waitForIdle();
+    Point point=view.getKeyboard().getKeyEventHandler().getLocationOnScreen();
+    robot.mouseMove(point.x+40,point.y+12);robot.mousePress(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);robot.waitForIdle();
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.FAST_FORWARD,null));
+    long deadline=System.nanoTime()+60000000000L;
+    while(!vm.getValue("currentFunction").equals("Keyboard.keyPressed") && System.nanoTime()<deadline)Thread.sleep(1);
+    if(System.nanoTime()>=deadline)throw new Exception("SysTest did not reach keyboard prompt");
+    robot.keyPress(KeyEvent.VK_A);robot.waitForIdle();Thread.sleep(100);robot.keyRelease(KeyEvent.VK_A);robot.waitForIdle();
+    while(!vm.getValue("currentFunction").equals("Sys.wait") && System.nanoTime()<deadline)Thread.sleep(1);
+    if(System.nanoTime()>=deadline)throw new Exception("SysTest did not enter wait");
+    long start=System.nanoTime();
+    while(vm.getValue("currentFunction").equals("Sys.wait") && System.nanoTime()<deadline)Thread.sleep(1);
+    double elapsed=(System.nanoTime()-start)/1000000.0;
+    Thread.sleep(2000);
+    controller.actionPerformed(new Hack.Controller.ControllerEvent(controls,Hack.Controller.ControllerEvent.STOP,null));
+    StringBuilder words=new StringBuilder();for(int i=16384;i<24576;i++)words.append(cpu.getRAM().getValueAt(i)).append('\n');
+    Files.writeString(Path.of(System.getenv("PROJECT12_ROOT"),"test-results","gui-sys-words.txt"),words);
+    Files.writeString(Path.of(System.getenv("PROJECT12_ROOT"),"test-results","gui-sys-measurement.json"),String.format(java.util.Locale.ROOT,"{\"requested_ms\":2000,\"elapsed_ms\":%.3f,\"source\":\"unmodified official SysTest/Main.jack\",\"input\":\"OS Robot press/release via official GUI keyboard\",\"speed_unit\":3}\n",elapsed));
+    ImageIO.write(robot.createScreenCapture(new Rectangle(controls.getLocationOnScreen(),controls.getSize())),"png",Path.of(System.getenv("PROJECT12_ROOT"),"test-results","gui-sys-controller.png").toFile());
+    SwingUtilities.invokeAndWait(()->controls.dispose());
+    System.out.printf(java.util.Locale.ROOT,"OFFICIAL_SYS_TEST requested=2000 elapsed_ms=%.3f%n",elapsed);
+}
+try{verifyKeys();measureControllerWait();runOfficialSysTest();}catch(Throwable e){e.printStackTrace();System.exit(1);}
 /exit
 EOF
 (
@@ -80,6 +114,7 @@ EOF
 ) 2>&1 | tee test-results/gui-keyboard.log
 grep -q 'GUI_KEY_EVENTS_OK count=18' test-results/gui-keyboard.log
 grep -q 'GUI_WAIT requested=2000' test-results/gui-keyboard.log
+grep -q 'OFFICIAL_SYS_TEST requested=2000' test-results/gui-keyboard.log
 python3 - <<'PY'
 from pathlib import Path
 import re
@@ -93,5 +128,12 @@ lines=[''.join(font.get(tuple((words[(row*11+y)*32+col//2]>>(8*(col%2)))&255 for
 assert any('Test completed successfully' in line for line in lines),lines
 assert sum(line=='ok' for line in lines)==4,lines
 Path('test-results/gui-keyboard-screen.txt').write_text('\n'.join(lines)+'\n')
-print('PASS: official KeyboardTest four stages via GUI OS key events')
+import json
+words=[int(s)&65535 for s in Path('test-results/gui-sys-words.txt').read_text().splitlines()]
+lines=[''.join(font.get(tuple((words[(row*11+y)*32+col//2]>>(8*(col%2)))&255 for y in range(11)),'?') for col in range(64)).rstrip() for row in range(23)]
+assert any('Time is up.' in line for line in lines),lines
+Path('test-results/gui-sys-screen.txt').write_text('\n'.join(lines)+'\n')
+measurement=json.loads(Path('test-results/gui-sys-measurement.json').read_text())
+assert 1500<=measurement['elapsed_ms']<=2500,measurement
+print('PASS: official KeyboardTest GUI events; official SysTest default-speed wait within documented 25 percent observational tolerance')
 PY
