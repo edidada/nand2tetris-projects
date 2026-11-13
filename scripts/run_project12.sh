@@ -29,6 +29,14 @@ for module in Math Memory Array; do
     python3 .tools/compiler/11/jack_compiler.py "$directory"
     run "$directory/${module}Test.tst"
 done
+# Additional original diagnostic checks reuse, range, and non-overlap.
+directory="$root/.tools/MemoryDiag"
+mkdir -p "$directory"
+cp projects/12/MemoryTest/MemoryDiag/*.jack projects/12/MemoryTest/MemoryDiag/*.tst projects/12/MemoryTest/MemoryDiag/*.cmp "$directory/"
+cp projects/12/*.jack "$directory/"
+python3 .tools/compiler/11/jack_compiler.py "$directory"
+run "$directory/MemoryDiag.tst"
+cp "$directory/MemoryDiag.out" test-results/
 # Compile all eight classes together and every supplied program. Later
 # integration tests must execute these VM files, rather than built-in OS calls.
 for name in String Output Screen Keyboard Sys; do
