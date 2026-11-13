@@ -25,6 +25,13 @@ void runGame() throws Exception {
     robot.mouseMove(point.x+40,point.y+12);robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);robot.waitForIdle();
     class Harness {
         void steps() throws Exception { for(int i=0;i<500000;i++)cpu.executeInstruction(); }
+        void idle() throws Exception {
+            for(int i=0;i<20000000;i++) {
+                cpu.executeInstruction();
+                if(vm.getValue("currentFunction").equals("Sys.wait"))return;
+            }
+            throw new Exception("Application did not reach input wait after rendering");
+        }
         int[] words() { int[] a=new int[8192];for(int i=0;i<a.length;i++)a[i]=cpu.getRAM().getValueAt(16384+i);return a; }
         void save(String name) throws Exception {
             int[] a=words();BufferedImage image=new BufferedImage(512,256,BufferedImage.TYPE_INT_RGB);
@@ -34,7 +41,7 @@ void runGame() throws Exception {
         void press(int key,int code) throws Exception {
             robot.keyPress(key);robot.waitForIdle();
             if(cpu.getRAM().getValueAt(24576)!=code)throw new Exception("press "+key);
-            steps();
+            idle();
             int[] held=words();steps();
             if(!java.util.Arrays.equals(held,words()))throw new Exception("Held key repeated a move");
             robot.keyRelease(key);robot.waitForIdle();
@@ -43,7 +50,7 @@ void runGame() throws Exception {
         }
         boolean pixel(int x,int y) {return ((cpu.getRAM().getValueAt(16384+y*32+x/16) >>> (x%16))&1)==1;}
     }
-    Harness h=new Harness();for(int i=0;i<10;i++)h.steps();h.save("initial");int[] initial=h.words();
+    Harness h=new Harness();h.idle();h.save("initial");int[] initial=h.words();
     h.press(KeyEvent.VK_RIGHT,132);h.save("push");
     // Top box has left its original location and now occupies the goal.
     if(h.pixel(144+3*24+4,40+2*24+4) || !h.pixel(144+4*24+4,40+2*24+4))throw new Exception("Push pixels wrong");
