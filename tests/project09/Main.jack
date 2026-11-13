@@ -12,8 +12,8 @@ class Main {
         do b.reset();
         do b.move(1);
         do b.move(8);
-        do b.move(8);
         do b.move(-1);
+        do b.move(8);
         do b.move(1);
         do Memory.poke(8005, b.won());
         do Memory.poke(8006, b.position());
