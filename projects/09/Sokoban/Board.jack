@@ -100,7 +100,7 @@ class Board {
             }
             let i = i + 1;
         }
-        do Output.moveCursor(21, 0);
+        do Output.moveCursor(22, 0);
         do Output.printString("Moves: ");
         do Output.printInt(moves);
         do Output.printString("  Pushes: ");

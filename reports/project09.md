@@ -10,6 +10,12 @@
 
 ## 验证状态
 
-源码已建立，尚未编译或运行，不能视为通过。下一步添加独立 Actions、模型状态断言、官方模拟器实际键盘交互和屏幕证据。所有编译及运行放在 GitHub Actions，本地仅编辑和静态检查。Java 只作为官方模拟器的工具运行时。
+独立工作流 .github/workflows/project09.yml 调用两个 shell 脚本。19 项 RAM 断言覆盖初始状态、墙壁阻挡、完整解题、顶墙推箱失败的原子性和重置。8 次 OS Robot 按下/释放经过官方 Swing KeyboardComponent 与 Keyboard 监听器，没有直接写键盘 RAM；检查推箱像素、长按不重复、胜利后锁定移动、重置画面逐字一致和退出画面。保存 initial/push/solved/restart/quit 五张 512×256 屏幕图。首个完整成功运行 https://github.com/edidada/nand2tetris-projects/actions/runs/43456336301；随后将状态栏下移一行，最终提交需由对应的新运行确认。所有编译及运行放在 GitHub Actions，本地仅编辑和静态检查。Java 只作为官方模拟器的工具运行时。
 
 官方要求：https://www.nand2tetris.org/project09
+
+## 固定依赖与验收范围
+
+官方源码基线 5bd2184edfd4945ff8a28eb0b237c12cdbe9e498；编译器 8c7bdcac1ddcb96ade280375e6f4221ace25eb3e；Jack OS a967e8977f4479414aa077f1bbbf340157051018；官方模拟器 327b7e4337b31efb815e1c1e3913c0efd299bcf2。运行时提取既有编译器，不新增 Python 源文件。完整 OS 在 CI 编译并加载，避免源码版模拟器缺少内置 init 入口。GUI 测试在 Xvfb 中生成系统键盘事件，VM 由脚本步进；不宣称经过真人课堂评阅或 Coursera 提交。应用是一关的完整基础版本，符合 Project09 允许的交互应用范围。
+
+早期失败包括模拟器入口不全、OS 初始化步数不足、测试解法路线错误及绘图尚未完成就比较长按画面；最终使用完整 OS，并等候 Sys.wait 输入阶段再比较帧，保留原判胜和状态断言。
