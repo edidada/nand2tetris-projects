@@ -19,8 +19,12 @@ jobs:
         run: |
           set -o pipefail
           bash scripts/run_project01.sh 05 2>&1 | tee project05-results.txt
+      - name: Run original Memory test with GUI keyboard events
+        run: bash scripts/verify_project05_gui.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: project05-official-results
-          path: project05-results.txt
+          path: |
+            project05-results.txt
+            test-results/
