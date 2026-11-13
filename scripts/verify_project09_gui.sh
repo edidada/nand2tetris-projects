@@ -41,7 +41,7 @@ void runGame() throws Exception {
         void press(int key,int code) throws Exception {
             robot.keyPress(key);robot.waitForIdle();
             if(cpu.getRAM().getValueAt(24576)!=code)throw new Exception("press "+key);
-            idle();
+            steps();idle();
             int[] held=words();steps();
             if(!java.util.Arrays.equals(held,words()))throw new Exception("Held key repeated a move");
             robot.keyRelease(key);robot.waitForIdle();
